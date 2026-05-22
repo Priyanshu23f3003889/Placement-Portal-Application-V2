@@ -1,8 +1,9 @@
 import enum
 from datetime import datetime
+
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy import Enum
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.schema import CheckConstraint, ForeignKey
 from sqlalchemy.sql import func
 
@@ -19,11 +20,13 @@ class DriveStatus(str, enum.Enum):
     APPROVED = "APPROVED"
     CLOSED = "CLOSED"
 
+
 class ApplicationStatus(str, enum.Enum):
     APPLIED = "APPLIED"
     SHORTLISTED = "SHORTLISTED"
     SELECTED = "SELECTED"
     REJECTED = "REJECTED"
+
 
 class Branch(str, enum.Enum):
     CSE = "Computer Science and Engineering"
@@ -56,7 +59,9 @@ class Student(db.Model):
     userId: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
     name: Mapped[str] = mapped_column(nullable=False)
     branch: Mapped[Branch] = mapped_column(Enum(Branch), nullable=False)
-    cgpa: Mapped[float] = mapped_column(CheckConstraint("cgpa <= 10.0 AND cgpa >= 0.0"), nullable=False)
+    cgpa: Mapped[float] = mapped_column(
+        CheckConstraint("cgpa <= 10.0 AND cgpa >= 0.0"), nullable=False
+    )
     resumeUrl: Mapped[str] = mapped_column(nullable=True)
 
     user: Mapped["User"] = relationship()
@@ -84,9 +89,13 @@ class PlacementDrive(db.Model):
     jobDescription: Mapped[str] = mapped_column(nullable=False)
     deadline: Mapped[datetime] = mapped_column(nullable=False)
     branch: Mapped[Branch] = mapped_column(Enum(Branch), nullable=False)
-    cgpa: Mapped[float] = mapped_column(CheckConstraint("cgpa <= 10.0 AND cgpa >= 0.0"), nullable=False)
+    cgpa: Mapped[float] = mapped_column(
+        CheckConstraint("cgpa <= 10.0 AND cgpa >= 0.0"), nullable=False
+    )
     year: Mapped[int] = mapped_column(nullable=False)
-    status: Mapped[DriveStatus] = mapped_column(Enum(DriveStatus), nullable=False, default=DriveStatus.PENDING)
+    status: Mapped[DriveStatus] = mapped_column(
+        Enum(DriveStatus), nullable=False, default=DriveStatus.PENDING
+    )
 
     company: Mapped["Company"] = relationship(back_populates="drives")
     applications: Mapped[list["Application"]] = relationship(back_populates="drive")
@@ -96,9 +105,15 @@ class PlacementDrive(db.Model):
 class Application(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     studentId: Mapped[int] = mapped_column(ForeignKey("student.id"), nullable=False)
-    driveId: Mapped[int] = mapped_column(ForeignKey("placement_drive.id"), nullable=False)
-    applicationDate: Mapped[datetime] = mapped_column(server_default=func.now(), nullable=False)
-    status: Mapped[ApplicationStatus] = mapped_column(Enum(ApplicationStatus), default=ApplicationStatus.APPLIED, nullable=False)
+    driveId: Mapped[int] = mapped_column(
+        ForeignKey("placement_drive.id"), nullable=False
+    )
+    applicationDate: Mapped[datetime] = mapped_column(
+        server_default=func.now(), nullable=False
+    )
+    status: Mapped[ApplicationStatus] = mapped_column(
+        Enum(ApplicationStatus), default=ApplicationStatus.APPLIED, nullable=False
+    )
 
     student: Mapped["Student"] = relationship(back_populates="applications")
     drive: Mapped["PlacementDrive"] = relationship(back_populates="applications")
@@ -107,12 +122,13 @@ class Application(db.Model):
 class Placement(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     studentId: Mapped[int] = mapped_column(ForeignKey("student.id"), nullable=False)
-    driveId: Mapped[int] = mapped_column(ForeignKey("placement_drive.id"), nullable=False)
+    driveId: Mapped[int] = mapped_column(
+        ForeignKey("placement_drive.id"), nullable=False
+    )
     companyId: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
     position: Mapped[str] = mapped_column(nullable=False)
     salary: Mapped[float] = mapped_column(nullable=True)
 
     student: Mapped["Student"] = relationship(back_populates="placements")
     drive: Mapped["PlacementDrive"] = relationship(back_populates="placements")
-    company: Mapped["Company"] = relationship(back_populates="placements") 
-    
+    company: Mapped["Company"] = relationship(back_populates="placements")

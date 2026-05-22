@@ -1,3 +1,7 @@
 backend/__pycache__
 backend/database/__pycache__
 backend/database/db_dir
+backend/controllers/__pycache__
+
+frontend/dist
+frontend/node_modules
