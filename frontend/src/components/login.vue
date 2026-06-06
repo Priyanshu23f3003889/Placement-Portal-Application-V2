@@ -38,7 +38,16 @@ async function login() {
         <div class="text-center col-11 col-sm-8 col-md-6 col-lg-4">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h1 class="mb-0">Login</h1>
+                    <h1 class="mb-0">
+                        <img
+                            class="mx-1"
+                            src="../assets/logo.png"
+                            alt="logo"
+                            width="60"
+                            height="60"
+                        />
+                        Login
+                    </h1>
                 </div>
                 <div class="card-body">
                     <form @submit.prevent="login">
@@ -75,14 +84,13 @@ async function login() {
                         </div>
                     </form>
                 </div>
+                <div v-if="isMsg" class="alert alert-danger m-2">
+                    {{ msg }}
+                </div>
             </div>
         </div>
     </div>
-    <div
-        v-if="isMsg"
-        class="alert alert-danger position-fixed bottom-0 end-0 m-3"
-        role="alert"
-    >
+    <!-- <div v-if="isMsg" class="alert alert-danger fixed-bottom" role="alert">
         {{ msg }}
-    </div>
+    </div> -->
 </template>

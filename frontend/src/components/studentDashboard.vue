@@ -1,7 +1,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useAuthStore } from "../states/authState";
-import LogoutButton from "./logoutButton.vue";
+import navbar from "./navbar.vue";
 
 const authStore = useAuthStore();
 const studentName = ref("");
@@ -31,19 +31,5 @@ onMounted(async () => {
 </script>
 
 <template>
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1>STUDENT DASHBOARD</h1>
-            <LogoutButton />
-        </div>
-        <div v-if="studentName">
-            <h3 class="mt-3">Welcome, {{ studentName }}!</h3>
-        </div>
-        <div v-else-if="!errorMsg">
-            <p>Loading...</p>
-        </div>
-        <div v-if="errorMsg" class="alert alert-danger mt-3">
-            {{ errorMsg }}
-        </div>
-    </div>
+    <navbar role="student" :name="studentName"></navbar>
 </template>

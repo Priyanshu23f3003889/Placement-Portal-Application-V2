@@ -56,13 +56,13 @@ class User(db.Model):
 
 class Student(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    userId: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+    userId: Mapped[int] = mapped_column(ForeignKey("user.id"))
     name: Mapped[str] = mapped_column(nullable=False)
     branch: Mapped[Branch] = mapped_column(Enum(Branch), nullable=False)
     cgpa: Mapped[float] = mapped_column(
         CheckConstraint("cgpa <= 10.0 AND cgpa >= 0.0"), nullable=False
     )
-    resumeUrl: Mapped[str] = mapped_column(nullable=True)
+    resumeUrl: Mapped[str] = mapped_column(nullable=False)
 
     user: Mapped["User"] = relationship()
     applications: Mapped[list["Application"]] = relationship(back_populates="student")
@@ -71,7 +71,7 @@ class Student(db.Model):
 
 class Company(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    userId: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
+    userId: Mapped[int] = mapped_column(ForeignKey("user.id"))
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
     hrContact: Mapped[str] = mapped_column(unique=True, nullable=False)
     website: Mapped[str] = mapped_column(unique=True, nullable=False)
@@ -84,7 +84,7 @@ class Company(db.Model):
 
 class PlacementDrive(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    companyId: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    companyId: Mapped[int] = mapped_column(ForeignKey("company.id"))
     jobTitle: Mapped[str] = mapped_column(nullable=False)
     jobDescription: Mapped[str] = mapped_column(nullable=False)
     deadline: Mapped[datetime] = mapped_column(nullable=False)
@@ -104,10 +104,8 @@ class PlacementDrive(db.Model):
 
 class Application(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    studentId: Mapped[int] = mapped_column(ForeignKey("student.id"), nullable=False)
-    driveId: Mapped[int] = mapped_column(
-        ForeignKey("placement_drive.id"), nullable=False
-    )
+    studentId: Mapped[int] = mapped_column(ForeignKey("student.id"))
+    driveId: Mapped[int] = mapped_column(ForeignKey("placement_drive.id"))
     applicationDate: Mapped[datetime] = mapped_column(
         server_default=func.now(), nullable=False
     )
@@ -121,11 +119,11 @@ class Application(db.Model):
 
 class Placement(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    studentId: Mapped[int] = mapped_column(ForeignKey("student.id"), nullable=False)
+    studentId: Mapped[int] = mapped_column(ForeignKey("student.id"))
     driveId: Mapped[int] = mapped_column(
-        ForeignKey("placement_drive.id"), nullable=False
+        ForeignKey("placement_drive.id"), nullable=True
     )
-    companyId: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=False)
+    companyId: Mapped[int] = mapped_column(ForeignKey("company.id"))
     position: Mapped[str] = mapped_column(nullable=False)
     salary: Mapped[float] = mapped_column(nullable=True)
 

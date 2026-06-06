@@ -55,17 +55,28 @@ async function register() {
 <template>
     <div
         class="d-flex justify-content-center align-items-center"
-        style="min-height: 100vh; padding: 20px 0;"
+        style="min-height: 100vh; padding: 20px 0"
     >
         <div class="text-center col-11 col-sm-8 col-md-6 col-lg-4">
             <div class="card shadow">
                 <div class="card-header bg-primary text-white">
-                    <h1 class="mb-0">Register</h1>
+                    <h1 class="mb-0">
+                        <img
+                            class="mx-1"
+                            src="../assets/logo.png"
+                            alt="logo"
+                            width="60"
+                            height="60"
+                        />
+                        Register
+                    </h1>
                 </div>
                 <div class="card-body text-start">
                     <form @submit.prevent="register">
                         <div class="mb-3">
-                            <label class="form-label d-block">Register as:</label>
+                            <label class="form-label d-block"
+                                >Register as:</label
+                            >
                             <div class="form-check form-check-inline">
                                 <input
                                     class="form-check-input"
@@ -74,7 +85,11 @@ async function register() {
                                     value="STUDENT"
                                     id="roleStudent"
                                 />
-                                <label class="form-check-label" for="roleStudent">Student</label>
+                                <label
+                                    class="form-check-label"
+                                    for="roleStudent"
+                                    >Student</label
+                                >
                             </div>
                             <div class="form-check form-check-inline">
                                 <input
@@ -84,12 +99,18 @@ async function register() {
                                     value="COMPANY"
                                     id="roleCompany"
                                 />
-                                <label class="form-check-label" for="roleCompany">Company</label>
+                                <label
+                                    class="form-check-label"
+                                    for="roleCompany"
+                                    >Company</label
+                                >
                             </div>
                         </div>
 
                         <div class="mb-3">
-                            <label for="email" class="form-label">Email address</label>
+                            <label for="email" class="form-label"
+                                >Email address</label
+                            >
                             <input
                                 type="email"
                                 v-model="email"
@@ -99,7 +120,9 @@ async function register() {
                             />
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
+                            <label for="password" class="form-label"
+                                >Password</label
+                            >
                             <input
                                 type="password"
                                 v-model="password"
@@ -122,17 +145,36 @@ async function register() {
 
                         <div v-if="role === 'STUDENT'">
                             <div class="mb-3">
-                                <label for="branch" class="form-label">Branch</label>
-                                <select v-model="branch" class="form-select" id="branch" required>
-                                    <option value="CSE">Computer Science and Engineering</option>
-                                    <option value="ECE">Electronics and Communication</option>
-                                    <option value="MECH">Mechanical Engineering</option>
-                                    <option value="CIVIL">Civil Engineering</option>
-                                    <option value="EE">Electrical Engineering</option>
+                                <label for="branch" class="form-label"
+                                    >Branch</label
+                                >
+                                <select
+                                    v-model="branch"
+                                    class="form-select"
+                                    id="branch"
+                                    required
+                                >
+                                    <option value="CSE">
+                                        Computer Science and Engineering
+                                    </option>
+                                    <option value="ECE">
+                                        Electronics and Communication
+                                    </option>
+                                    <option value="MECH">
+                                        Mechanical Engineering
+                                    </option>
+                                    <option value="CIVIL">
+                                        Civil Engineering
+                                    </option>
+                                    <option value="EE">
+                                        Electrical Engineering
+                                    </option>
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="cgpa" class="form-label">CGPA</label>
+                                <label for="cgpa" class="form-label"
+                                    >CGPA</label
+                                >
                                 <input
                                     type="number"
                                     step="0.01"
@@ -145,19 +187,25 @@ async function register() {
                                 />
                             </div>
                             <div class="mb-3">
-                                <label for="resumeUrl" class="form-label">Resume URL</label>
+                                <label for="resumeUrl" class="form-label"
+                                    >Resume URL</label
+                                >
                                 <input
                                     type="url"
                                     v-model="resumeUrl"
                                     class="form-control"
                                     id="resumeUrl"
+                                    required
+                                    
                                 />
                             </div>
                         </div>
 
                         <div v-if="role === 'COMPANY'">
                             <div class="mb-3">
-                                <label for="hrContact" class="form-label">HR Contact</label>
+                                <label for="hrContact" class="form-label"
+                                    >HR Contact</label
+                                >
                                 <input
                                     type="text"
                                     v-model="hrContact"
@@ -167,7 +215,9 @@ async function register() {
                                 />
                             </div>
                             <div class="mb-3">
-                                <label for="website" class="form-label">Website</label>
+                                <label for="website" class="form-label"
+                                    >Website</label
+                                >
                                 <input
                                     type="url"
                                     v-model="website"
@@ -179,17 +229,26 @@ async function register() {
                         </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary">Register</button>
-                            <router-link to="/login" class="btn btn-link">Already have an account? Login</router-link>
+                            <button type="submit" class="btn btn-primary">
+                                Register
+                            </button>
+                            <router-link to="/login" class="btn btn-link"
+                                >Already have an account? Login</router-link
+                            >
                         </div>
                     </form>
                 </div>
+                <div
+                    v-if="isMsg"
+                    :class="[
+                        'alert',
+                        msg.includes('successful') ? 'alert-success' : 'alert-danger',
+                        'm-3',
+                    ]"
+                >
+                    {{ msg }}
+                </div>
             </div>
         </div>
-    </div>
-    <div v-if="isMsg"
-         :class="['alert', msg.includes('successful') ? 'alert-success' : 'alert-danger', 'position-fixed', 'bottom-0', 'end-0', 'm-3']"
-         role="alert">
-        {{ msg }}
     </div>
 </template>

@@ -1,12 +1,8 @@
 <script setup>
-import LogoutButton from "./logoutButton.vue";
+import navbar from "./navbar.vue";
 </script>
 
 <template>
-    <div class="container mt-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1>ADMIN DASHBOARD</h1>
-            <LogoutButton />
-        </div>
-    </div>
+    <navbar role="admin" name="Admin"></navbar>
+    <router-view/>
 </template>

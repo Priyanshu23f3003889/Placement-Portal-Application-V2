@@ -6,6 +6,10 @@ import Register from "../components/register.vue";
 import AdminDashboard from "../components/adminDashboard.vue";
 import CompanyDashboard from "../components/companyDashboard.vue";
 import StudentDashboard from "../components/studentDashboard.vue";
+import AdminCompanies from "../components/admin/AdminCompanies.vue";
+import AdminStudents from "../components/admin/AdminStudents.vue";
+import AdminDrives from "../components/admin/AdminDrives.vue";
+import AdminApplications from "../components/admin/AdminApplications.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,9 +39,24 @@ const router = createRouter({
     },
     {
       path: "/admin",
-      name: "admin-dashboard",
+      name : "admin-dashboard",
       component: AdminDashboard,
       meta: { requiresAuth: true, role: "ADMIN" },
+      redirect: "/admin/companies",
+      children: [
+        {
+          path: "companies",
+          name: "admin-companies",
+          component: AdminCompanies,
+        },
+        { path: "students", name: "admin-students", component: AdminStudents },
+        { path: "drives", name: "admin-drives", component: AdminDrives },
+        {
+          path: "applications",
+          name: "admin-applications",
+          component: AdminApplications,
+        },
+      ],
     },
     {
       path: "/company",
@@ -59,7 +78,7 @@ router.beforeEach((to, from) => {
   const isAuthenticated = !!authStore.token;
 
   if (to.name === "login" && isAuthenticated) {
-    if (authStore.role === "ADMIN") return { name: "admin-dashboard" };
+    if (authStore.role === "ADMIN") return { path: "/admin/companies" };
     if (authStore.role === "COMPANY") return { name: "company-dashboard" };
     if (authStore.role === "STUDENT") return { name: "student-dashboard" };
   }
@@ -69,7 +88,7 @@ router.beforeEach((to, from) => {
   }
 
   if (to.meta.requiresAuth && to.meta.role !== authStore.role) {
-    if (authStore.role === "ADMIN") return { name: "admin-dashboard" };
+    if (authStore.role === "ADMIN") return { path: "/admin/companies" };
     if (authStore.role === "COMPANY") return { name: "company-dashboard" };
     if (authStore.role === "STUDENT") return { name: "student-dashboard" };
     return { name: "login" };

@@ -1,4 +1,6 @@
-﻿from os import makedirs, path
+﻿from datetime import timedelta
+from os import makedirs, path
+
 from database.models import (
     Role,
     User,
@@ -17,9 +19,16 @@ if not path.exists(path.dirname(DB_PATH)):
 
 
 def createApp():
-    app = Flask(__name__, template_folder='../frontend/dist', static_folder='../frontend/dist/assets', static_url_path='/assets')
+
+    app = Flask(
+        __name__,
+        template_folder="../frontend/dist",
+        static_folder="../frontend/dist/assets",
+        static_url_path="/assets",
+    )
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
-    app.config['SECRET_KEY'] = 'sectet_key_to_sign_jwt_tokens_and_other_cookies'
+    app.config["SECRET_KEY"] = "sectet_key_to_sign_jwt_tokens_and_other_cookies"
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 
     db.init_app(app)
 
@@ -68,7 +77,8 @@ def createApp():
     return app
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = createApp()
     import controllers.controller
-    app.run(debug=True, host='0.0.0.0', port=80)
+
+    app.run(debug=True, host="0.0.0.0", port=80)
