@@ -8,6 +8,7 @@ from database.models import (
 )
 from flask import Flask
 from flask_cors import CORS
+from flask_jwt_extended import JWTManager
 from werkzeug.security import generate_password_hash
 
 DB_PATH = path.join(
@@ -31,6 +32,7 @@ def createApp():
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
 
     db.init_app(app)
+    jwt = JWTManager(app)
 
     with app.app_context():
         db.create_all()
@@ -79,6 +81,10 @@ def createApp():
 
 if __name__ == "__main__":
     app = createApp()
-    import controllers.controller
+    import controllers.adminController
+    import controllers.authController
+    import controllers.companyController
+    import controllers.mainController
+    import controllers.studentController
 
     app.run(debug=True, host="0.0.0.0", port=80)

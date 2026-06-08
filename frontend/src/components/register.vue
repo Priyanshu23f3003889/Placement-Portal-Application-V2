@@ -124,7 +124,7 @@ async function register() {
                                 >Password</label
                             >
                             <input
-                                type="password"
+                                type="text"
                                 v-model="password"
                                 class="form-control"
                                 id="password"

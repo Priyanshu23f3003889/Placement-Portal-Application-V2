@@ -76,6 +76,9 @@ onMounted(async () => {
                 <h2 class="card-title">{{ a.name }}</h2>
                 <ul class="card-text">
                     <li>
+                        <h5>Student ID : {{ a.studentId }}</h5>
+                    </li>
+                    <li>
                         <h5>Application ID : {{ a.id }}</h5>
                     </li>
                     <li>
@@ -93,6 +96,9 @@ onMounted(async () => {
                                 >View Resume</a
                             >
                         </h5>
+                    </li>
+                    <li>
+                        <h5>Applied : {{ a.applicationDate }}</h5>
                     </li>
                     <li>
                         <h5>
