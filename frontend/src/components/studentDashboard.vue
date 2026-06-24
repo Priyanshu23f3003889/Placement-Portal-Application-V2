@@ -32,4 +32,5 @@ onMounted(async () => {
 
 <template>
     <navbar role="student" :name="studentName"></navbar>
+    <router-view />
 </template>

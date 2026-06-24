@@ -25,6 +25,7 @@ def adminCompanies():
             {
                 "id": c.id,
                 "name": c.name,
+                "email": c.user.email,
                 "hrContact": c.hrContact,
                 "website": c.website,
                 "isApproved": c.isApproved,
@@ -114,12 +115,13 @@ def adminApplications():
         apps_data = [
             {
                 "id": a.id,
-                "studentId" : a.student.id,
+                "studentId": a.student.id,
                 "name": a.student.name,
                 "driveId": a.driveId,
+                "companyName": a.drive.company.name,
                 "jobTitle": a.drive.jobTitle,
                 "resumeUrl": a.student.resumeUrl,
-                "applicationDate" : a.applicationDate,
+                "applicationDate": a.applicationDate,
                 "status": a.status.value if hasattr(a.status, "value") else a.status,
             }
             for a in applications
@@ -146,6 +148,7 @@ def adminStudents():
             {
                 "id": s.id,
                 "name": s.name,
+                "email": s.user.email,
                 "resumeUrl": s.resumeUrl,
                 "cgpa": s.cgpa,
                 "isApproved": s.user.isActive,
@@ -212,30 +215,6 @@ def deleteStudent(student_id):
         return jsonify({"message": str(e)}), 500
 
 
-def update_expired_drives_status():
-    try:
-        now = datetime.now()
-        expired_drives = (
-            db.session.execute(
-                db.select(PlacementDrive).where(
-                    PlacementDrive.deadline < now,
-                    PlacementDrive.status != DriveStatus.CLOSED,
-                )
-            )
-            .scalars()
-            .all()
-        )
-
-        for drive in expired_drives:
-            drive.status = DriveStatus.CLOSED
-
-        if expired_drives:
-            db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        app.logger.error(f"Error updating expired drives: {e}")
-
-
 @app.route("/api/admin/Drives", methods=["GET"])
 @jwt_required()
 def adminDrives():
@@ -243,9 +222,8 @@ def adminDrives():
     user = db.session.scalar(db.select(User).where(User.id == int(current_user_id)))
 
     if user.role.name == "ADMIN":
-        update_expired_drives_status()
         drives = (
-            db.session.execute(db.select(PlacementDrive).order_by(PlacementDrive.id))
+            db.session.execute(db.select(PlacementDrive).order_by(PlacementDrive.id.desc()))
             .scalars()
             .all()
         )
@@ -293,9 +271,35 @@ def toggleDriveApproval(drive_id):
         return jsonify(
             {
                 "message": "Drive approval status updated",
-                "status": drive.status.value
-                if hasattr(drive.status, "value")
-                else drive.status,
+                "status": drive.status
+            }
+        ), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"message": str(e)}), 500
+
+
+@app.route("/api/admin/drives/<int:drive_id>/delete", methods=["DELETE"])
+@jwt_required()
+def toDrive(drive_id):
+    current_user_id = get_jwt_identity()
+    user = db.session.scalar(db.select(User).where(User.id == int(current_user_id)))
+    if user.role.name != "ADMIN":
+        return jsonify({"message": "Access Denied"}), 403
+
+    drive = db.session.scalar(
+        db.select(PlacementDrive).where(PlacementDrive.id == drive_id)
+    )
+    if not drive:
+        return jsonify({"message": "Drive not found"}), 404
+
+    try:
+        db.session.delete(drive)
+        db.session.commit()
+        return jsonify(
+            {
+                "message": "Drive Deleted",
+                "status": drive.status
             }
         ), 200
     except Exception as e:

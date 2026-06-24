@@ -50,9 +50,12 @@ def register():
         db.session.add(new_student)
 
     elif role_name == "COMPANY":
-        name = data.get("name")
-        hrContact = data.get("hrContact")
-        website = data.get("website")
+        name = data.get("name").strip()
+        hrContact = data.get("hrContact").strip()
+        website = data.get("website").strip()
+
+        if len(hrContact) > 40 or len(hrContact)<6:
+            return jsonify({"message": "Sorry, your HR Contact must be between 6 and 40 characters long."}), 400
 
         if not name or not hrContact or not website:
             return jsonify({"message": "Missing company details"}), 400

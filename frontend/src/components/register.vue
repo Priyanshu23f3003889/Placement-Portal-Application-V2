@@ -45,7 +45,7 @@ async function register() {
         msg.value = "Registration successful! Redirecting to login...";
         setTimeout(() => {
             router.push({ name: "login" });
-        }, 2000);
+        }, 1000);
     } catch (error) {
         msg.value = error.message;
     }

@@ -13,6 +13,7 @@ const filteredCompanies = computed(() => {
     return companies.value.filter(
         (c) =>
             c.name.toLowerCase().includes(query) ||
+            c.email.toLowerCase().includes(query) ||
             c.id.toString().includes(query),
     );
 });
@@ -94,7 +95,12 @@ onMounted(async () => {
 <template>
     <div class="container-lg mt-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h1>Companies </h1>
+            <h1>
+                Companies
+                <span class="badge bg-secondary fs-6 align-middle">{{
+                    filteredCompanies.length
+                }}</span>
+            </h1>
             <input
                 type="text"
                 class="form-control w-auto"
@@ -107,15 +113,15 @@ onMounted(async () => {
     </div>
 
     <div class="container-lg d-flex flex-wrap">
-        <div
-            class="card m-3"
-            v-for="c in filteredCompanies"
-        >
+        <div class="card m-3" v-for="c in filteredCompanies">
             <div class="card-body">
                 <h2 class="card-title">{{ c.name }}</h2>
                 <ul class="card-text">
                     <li>
                         <h5>ID : {{ c.id }}</h5>
+                    </li>
+                    <li>
+                        <h5>Email : {{ c.email }}</h5>
                     </li>
                     <li>
                         <h5>HR Contact : {{ c.hrContact }}</h5>

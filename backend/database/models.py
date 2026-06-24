@@ -1,12 +1,10 @@
 import enum
-from datetime import datetime
+from datetime import date, datetime
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Enum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.schema import CheckConstraint, ForeignKey
-from sqlalchemy.sql import func
-
 
 class Base(DeclarativeBase):
     pass
@@ -107,7 +105,7 @@ class Application(db.Model):
     studentId: Mapped[int] = mapped_column(ForeignKey("student.id"))
     driveId: Mapped[int] = mapped_column(ForeignKey("placement_drive.id"))
     applicationDate: Mapped[datetime] = mapped_column(
-        server_default=func.now(), nullable=False
+        default=datetime.now(), nullable=False
     )
     status: Mapped[ApplicationStatus] = mapped_column(
         Enum(ApplicationStatus), default=ApplicationStatus.APPLIED, nullable=False

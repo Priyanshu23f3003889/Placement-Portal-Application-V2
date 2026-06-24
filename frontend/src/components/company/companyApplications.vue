@@ -29,7 +29,7 @@ const getStatusClass = (status) => {
 
 const fetchApplications = async () => {
     try {
-        const response = await fetch("/api/admin/applications", {
+        const response = await fetch("/api/company/applications", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${authStore.token}`,
@@ -49,6 +49,40 @@ const fetchApplications = async () => {
     } catch (err) {
         errmsg.value = "Network error occurred";
     }
+};
+
+const changeStatus = async (appId, rejected) => {
+    try {
+        const response = await fetch(`/api/company/applications/changestatus/${appId}/${rejected}`, {
+            method: "PATCH",
+            headers: {
+                Authorization: `Bearer ${authStore.token}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        if (response.ok) {
+          fetchApplications();
+        } else {
+            const errorData = await response.json();
+            errmsg.value =
+                errorData.message ||
+                errorData.msg ||
+                "Failed to fetch Applications";
+        }
+    } catch (err) {
+        errmsg.value = "Network error occurred";
+    }
+};
+
+function getButtonText(s) {
+  if (s === "APPLIED") {
+    return "Shortlist";
+  } else if (s === "SHORTLISTED") {
+    return "Select";
+  } else if (s === "REJECTED") {
+    return "Shortlist Again";
+  }
 };
 
 onMounted(async () => {
@@ -91,9 +125,6 @@ onMounted(async () => {
                         <h5>Drive ID : {{ a.driveId }}</h5>
                     </li>
                     <li>
-                        <h5>Company : {{ a.companyName }}</h5>
-                    </li>
-                    <li>
                         <h5>Job Title : {{ a.jobTitle }}</h5>
                     </li>
                     <li>
@@ -116,6 +147,22 @@ onMounted(async () => {
                         </h5>
                     </li>
                 </ul>
+                <div class="d-flex gap-2 ">
+                    <button v-if = "a.status !== 'SELECTED'"
+                        class="btn btn-success"
+                        @click = "changeStatus(a.id, 0)"
+                    >
+                       {{ getButtonText(a.status) }}
+                    </button>
+
+                    <button 
+                        v-if = "a.status !== 'REJECTED'"
+                        class="btn btn-danger"
+                        @click = "changeStatus(a.id, 1)"
+                    >
+                       Reject
+                    </button>
+                </div>
             </div>
         </div>
     </div>

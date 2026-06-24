@@ -13,7 +13,6 @@ const filteredDrives = computed(() => {
     return drives.value.filter(
         (d) =>
             (d.jobTitle && d.jobTitle.toLowerCase().includes(query)) ||
-            (d.companyName && d.companyName.toLowerCase().includes(query)) ||
             (d.status && d.status.toLowerCase().includes(query)) ||
             (d.id && d.id.toString().includes(query)),
     );
@@ -21,7 +20,7 @@ const filteredDrives = computed(() => {
 
 const fetchDrives = async () => {
     try {
-        const response = await fetch("/api/admin/Drives", {
+        const response = await fetch("/api/company/drives", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${authStore.token}`,
@@ -31,7 +30,6 @@ const fetchDrives = async () => {
 
         if (response.ok) {
             drives.value = await response.json();
-            errmsg.value = "";
         } else {
             const errorData = await response.json();
             errmsg.value =
@@ -44,35 +42,11 @@ const fetchDrives = async () => {
     }
 };
 
-const toggleApproval = async (id) => {
+const closeDrive = async (id) => {
+    if (!confirm("Are you sure you want to close this drive?")) return;
     try {
-        const response = await fetch(
-            `/api/admin/drives/${id}/toggle-approval`,
-            {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${authStore.token}`,
-                    "Content-Type": "application/json",
-                },
-            },
-        );
-        if (response.ok) {
-            await fetchDrives();
-            errmsg.value = "";
-        } else {
-            const errorData = await response.json();
-            errmsg.value =
-                errorData.message || "Failed to toggle approval status";
-        }
-    } catch (err) {
-        errmsg.value = "Network error occurred";
-    }
-};
-
-const deleteDrive = async (id) => {
-    try {
-        const response = await fetch(`/api/admin/drives/${id}/delete`, {
-            method: "DELETE",
+        const response = await fetch(`/api/company/drives/${id}/close`, {
+            method: "PATCH",
             headers: {
                 Authorization: `Bearer ${authStore.token}`,
                 "Content-Type": "application/json",
@@ -80,10 +54,9 @@ const deleteDrive = async (id) => {
         });
         if (response.ok) {
             await fetchDrives();
-            errmsg.value = "";
         } else {
             const errorData = await response.json();
-            errmsg.value = errorData.message || "Failed to Delete Drive";
+            errmsg.value = errorData.message || "Failed to close drive";
         }
     } catch (err) {
         errmsg.value = "Network error occurred";
@@ -104,10 +77,15 @@ onMounted(async () => {
                     filteredDrives.length
                 }}</span>
             </h1>
+
+            <router-link class="btn btn-success" to="newdrive"
+                >+ New</router-link
+            >
+
             <input
                 type="text"
                 class="form-control w-auto"
-                placeholder="Search by ID, Job Title or Company Name..."
+                placeholder="Search by ID, Job Title or status.."
                 v-model="searchQuery"
             />
         </div>
@@ -118,8 +96,9 @@ onMounted(async () => {
     <div class="container-lg d-flex flex-wrap">
         <div class="card m-3" v-for="d in filteredDrives" :key="d.id">
             <div class="card-body">
-                <h2 class="card-title">{{ d.jobTitle || d.joTitle }}</h2>
+                <h2 class="card-title">{{ d.jobTitle }}</h2>
                 <ul class="card-text">
+                    <h5>
                         <textarea
                             class="form-control bg-white"
                             disabled
@@ -128,11 +107,9 @@ onMounted(async () => {
                         >
  {{ d.jobDescription }}</textarea
                         >
+                    </h5>
                     <li>
                         <h5>Drive ID : {{ d.id }}</h5>
-                    </li>
-                    <li>
-                        <h5>Company Name : {{ d.companyName }}</h5>
                     </li>
                     <li>
                         <h5>Branch : {{ d.branch }}</h5>
@@ -156,7 +133,7 @@ onMounted(async () => {
                             >
                                 {{
                                     d.status === "APPROVED"
-                                        ? "ONGONIG"
+                                        ? "ONGOING"
                                         : d.status
                                 }}
                             </span>
@@ -166,19 +143,18 @@ onMounted(async () => {
                 <div class="d-flex gap-2 mt-3">
                     <button
                         v-if="d.status !== 'CLOSED'"
-                        :class="[
-                            'btn',
-                            d.status === 'APPROVED'
-                                ? 'btn-warning'
-                                : 'btn-success',
-                        ]"
-                        @click="toggleApproval(d.id)"
+                        class="btn btn-danger"
+                        @click="closeDrive(d.id)"
                     >
-                        {{ d.status === "APPROVED" ? "Disapprove" : "Approve" }}
+                        Close
                     </button>
-                    <button @click="deleteDrive(d.id)" class="btn btn-danger">
-                        Delete
-                    </button>
+
+                    <router-link
+                        v-if="d.status !== 'CLOSED'"
+                        class="btn btn-primary"
+                        :to="`editdrive/${d.id}`"
+                        >Edit</router-link
+                    >
                 </div>
             </div>
         </div>

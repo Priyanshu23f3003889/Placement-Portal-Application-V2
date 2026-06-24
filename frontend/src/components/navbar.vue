@@ -18,7 +18,7 @@ const isCompany = computed(() => {
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg bg-primary" data-bs-theme="dark">
+    <nav class="navbar navbar-expand-lg bg-primary fixed-top" >
         <div class="container-fluid">
             <span
                 class="navbar-brand mb-0 fs-2 fw-bold text-white text-capitalize"
@@ -90,25 +90,38 @@ const isCompany = computed(() => {
 
                     <template v-if="isCompany">
                         <li class="nav-item">
-                            <a
-                                class="nav-link text-white active fw-bold"
-                                aria-current="page"
-                                href="#"
-                                >Drives</a
+                            <router-link
+                                class="nav-link text-white"
+                                exact-active-class="active fw-bold"
+                                to="/company/drives"
+                                >Drives</router-link
                             >
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="#">History</a>
+                            <router-link
+                                class="nav-link text-white"
+                                exact-active-class="active fw-bold"
+                                to="applications"
+                                >Applications</router-link
+                            >
                         </li>
                     </template>
                 </ul>
                 <div class="d-flex mt-2 mt-lg-0 gap-2">
-                    <button v-if="!isAdmin" class="btn btn-outline-light">
-                        Profile
-                    </button>
+                    <router-link
+                        v-if="!isAdmin"
+                        :to="
+                            isCompany ? '/company/profile' : '/student/profile'
+                        "
+                        ><button class="btn btn-outline-light">
+                            Profile
+                        </button></router-link
+                    >
+
                     <LogoutButton v-if="isAdmin"></LogoutButton>
                 </div>
             </div>
         </div>
     </nav>
+    <div style="margin-bottom: 5rem;"></div>
 </template>

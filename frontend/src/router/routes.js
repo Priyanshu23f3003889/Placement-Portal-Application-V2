@@ -10,6 +10,12 @@ import AdminCompanies from "../components/admin/AdminCompanies.vue";
 import AdminStudents from "../components/admin/AdminStudents.vue";
 import AdminDrives from "../components/admin/AdminDrives.vue";
 import AdminApplications from "../components/admin/AdminApplications.vue";
+import CompanyProfile from "../components/company/companyProfile.vue";
+import StudentProfile from "../components/student/studentProfile.vue";
+import CompanyDrives from "../components/company/companyDrives.vue";
+import NewDrive from "../components/company/companyNewDrive.vue";
+import  EditDrive from "../components/company/companyEditDrive.vue"
+import CompanyApplications from "../components/company/companyApplications.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -39,7 +45,7 @@ const router = createRouter({
     },
     {
       path: "/admin",
-      name : "admin-dashboard",
+      name: "admin-dashboard",
       component: AdminDashboard,
       meta: { requiresAuth: true, role: "ADMIN" },
       redirect: "/admin/companies",
@@ -63,12 +69,47 @@ const router = createRouter({
       name: "company-dashboard",
       component: CompanyDashboard,
       meta: { requiresAuth: true, role: "COMPANY" },
+      redirect: "/company/drives",
+      children: [
+        {
+          path: "profile",
+          name: "company-profile",
+          component: CompanyProfile,
+        },
+        {
+          path: "drives",
+          name: "company-drives",
+          component: CompanyDrives,
+        },
+        {
+          path: "newdrive",
+          name: "company-newdrive",
+          component: NewDrive,
+        },
+        {
+          path: "editdrive/:id",
+          name: "company-editdrive",
+          component: EditDrive,
+        },
+        {
+          path: "applications",
+          name: "company-applications",
+          component: CompanyApplications,
+        },
+      ],
     },
     {
       path: "/student",
       name: "student-dashboard",
       component: StudentDashboard,
       meta: { requiresAuth: true, role: "STUDENT" },
+      children: [
+        {
+          path: "profile",
+          name: "student-profile",
+          component: StudentProfile,
+        },
+      ],
     },
   ],
 });

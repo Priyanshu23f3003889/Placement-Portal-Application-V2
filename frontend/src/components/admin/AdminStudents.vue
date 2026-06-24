@@ -13,6 +13,7 @@ const filteredStudents = computed(() => {
     return students.value.filter(
         (s) =>
             s.name.toLowerCase().includes(query) ||
+            s.email.toLowerCase().includes(query) ||
             s.id.toString().includes(query),
     );
 });
@@ -65,7 +66,6 @@ const toggleApproval = async (id) => {
     }
 };
 
-
 const deleteStudent = async (id) => {
     if (!confirm("Are you sure you want to delete this Student?")) return;
     try {
@@ -87,7 +87,6 @@ const deleteStudent = async (id) => {
     }
 };
 
-
 onMounted(async () => {
     await fetchStudents();
 });
@@ -96,7 +95,12 @@ onMounted(async () => {
 <template>
     <div class="container-lg mt-3">
         <div class="d-flex justify-content-between align-items-center">
-            <h1>Students </h1>
+            <h1>
+                Students
+                <span class="badge bg-secondary fs-6 align-middle">{{
+                    filteredStudents.length
+                }}</span>
+            </h1>
             <input
                 type="text"
                 class="form-control w-auto"
@@ -109,15 +113,15 @@ onMounted(async () => {
     </div>
 
     <div class="container-lg d-flex flex-wrap">
-        <div
-            class="card m-3"
-            v-for="s in filteredStudents"
-        >
+        <div class="card m-3" v-for="s in filteredStudents">
             <div class="card-body">
                 <h2 class="card-title">{{ s.name }}</h2>
                 <ul class="card-text">
                     <li>
                         <h5>ID : {{ s.id }}</h5>
+                    </li>
+                    <li>
+                        <h5>Email : {{ s.email }}</h5>
                     </li>
                     <li>
                         <h5>Branch : {{ s.branch }}</h5>
@@ -128,9 +132,7 @@ onMounted(async () => {
                     <li>
                         <h5>
                             Resume :
-                            <a :href="s.resumeUrl">{{
-                                s.resumeUrl
-                            }}</a>
+                            <a :href="s.resumeUrl">{{ s.resumeUrl }}</a>
                         </h5>
                     </li>
                     <li>

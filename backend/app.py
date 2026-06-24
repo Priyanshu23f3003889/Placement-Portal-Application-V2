@@ -30,7 +30,7 @@ def createApp():
     )
     app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{DB_PATH}"
     app.config["SECRET_KEY"] = "sectet_key_to_sign_jwt_tokens_and_other_cookies"
-    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
+    app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(weeks=4)
 
     db.init_app(app)
     jwt = JWTManager(app)
