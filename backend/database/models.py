@@ -110,6 +110,7 @@ class Application(db.Model):
     status: Mapped[ApplicationStatus] = mapped_column(
         Enum(ApplicationStatus), default=ApplicationStatus.APPLIED, nullable=False
     )
+    resumeUrl : Mapped[str] = mapped_column(nullable=False)
 
     student: Mapped["Student"] = relationship(back_populates="applications")
     drive: Mapped["PlacementDrive"] = relationship(back_populates="applications")
@@ -117,13 +118,16 @@ class Application(db.Model):
 
 class Placement(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    studentId: Mapped[int] = mapped_column(ForeignKey("student.id"))
+    studentId: Mapped[int] = mapped_column(ForeignKey("student.id"), nullable=True)
     driveId: Mapped[int] = mapped_column(
         ForeignKey("placement_drive.id"), nullable=True
     )
-    companyId: Mapped[int] = mapped_column(ForeignKey("company.id"))
+    companyId: Mapped[int] = mapped_column(ForeignKey("company.id"), nullable=True)
+    companyName: Mapped[str] = mapped_column(nullable=False)
+    studentName: Mapped[str] = mapped_column(nullable=False)
     position: Mapped[str] = mapped_column(nullable=False)
-    salary: Mapped[float] = mapped_column(nullable=True)
+    salary: Mapped[float] = mapped_column(nullable=False)
+    year : Mapped[int] = mapped_column(nullable=False)
 
     student: Mapped["Student"] = relationship(back_populates="placements")
     drive: Mapped["PlacementDrive"] = relationship(back_populates="placements")

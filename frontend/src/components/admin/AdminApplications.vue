@@ -111,7 +111,7 @@ onMounted(async () => {
                         <h5>
                             Status :
                             <span :class="getStatusClass(a.status)">{{
-                                a.status
+                                a.status === 'SELECTED' ? 'PLACED' : a.status
                             }}</span>
                         </h5>
                     </li>

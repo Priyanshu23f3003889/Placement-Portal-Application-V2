@@ -238,11 +238,11 @@ def companyApplications():
                 "driveId": a.driveId,
                 "companyName": a.drive.company.name,
                 "jobTitle": a.drive.jobTitle,
-                "resumeUrl": a.student.resumeUrl,
+                "resumeUrl": a.resumeUrl,
                 "applicationDate": a.applicationDate,
                 "status": a.status.value if hasattr(a.status, "value") else a.status,
             }
-            for a in sorted(applications, key = lambda x : x.driveId, reverse = True)
+            for a in sorted(applications, key = lambda x : x.applicationDate, reverse = True)
         ]
         return jsonify(apps_data), 200
 
@@ -269,16 +269,15 @@ def changeStatus(appId, rejected) :
         if application.drive.companyId != company.id :
             return jsonify({"message": "This Application does not belong to any of your Drives"}), 404
 
+        if application.status == ApplicationStatus.REJECTED or application.status == ApplicationStatus.SELECTED :
+            return jsonify({"message": "This Application can Not be modified further"}), 403
+
         try:
             if rejected:
                 application.status = ApplicationStatus.REJECTED
                 
-            elif application.status == ApplicationStatus.APPLIED or application.status == ApplicationStatus.REJECTED:
+            elif application.status == ApplicationStatus.APPLIED:
                 application.status = ApplicationStatus.SHORTLISTED
-
-            else:
-                application.status = ApplicationStatus.SELECTED
-            
 
             db.session.commit()
             return jsonify({"message": "Application status changed"}), 200
@@ -289,6 +288,123 @@ def changeStatus(appId, rejected) :
 
             return jsonify({"message": "Failed to change the Application status"}), 404
             
+
+    else:
+        return jsonify({"message": "Access Denied"}), 403
+
+
+@app.route("/api/company/makeplacement/<int:applicationId>", methods = ["POST"])
+@jwt_required()
+def makePlacement(applicationId) :
+    current_user_id = get_jwt_identity()
+    user = db.session.scalar(db.select(User).where(User.id == int(current_user_id)))
+
+    if user.role.name == "COMPANY":
+        company = db.session.scalar(db.select(Company).where(Company.userId == user.id)) 
+        if not company.isApproved:
+            return jsonify({"message": "Blacklisted/Pending Approval from ADMIN"}), 404
+
+        application = db.session.scalar(db.select(Application).where(Application.id == applicationId))
+        
+        if not application:
+            return jsonify({"message": "Application does not Exist"}), 404
+            
+        drive = application.drive
+
+        if drive.companyId != company.id :
+            return jsonify({"message": "This Application does not belong to any of your Drives"}), 404
+
+        if application.status == ApplicationStatus.REJECTED or application.status == ApplicationStatus.SELECTED :
+            return jsonify({"message": "This Application can Not be modified further"}), 403
+
+        try:
+            
+            studentId = application.studentId
+            driveId = application.driveId
+            companyId = application.drive.companyId
+            companyName = application.drive.company.name
+            studentName = application.student.name
+            position = application.drive.jobTitle
+            salary = request.get_json().get("salary")
+            year = datetime.now().year
+
+            placement = Placement(studentId = studentId, driveId=driveId, companyId=companyId, companyName = companyName,studentName = studentName, position = position, salary = salary, year = year)
+            db.session.add(placement)
+            application.status = ApplicationStatus.SELECTED
+            db.session.commit()
+            
+            return jsonify({"message": "Placement has been Made"}), 200
+                
+                
+        except:
+            db.session.rollback()
+
+            return jsonify({"message": "Failed to make Placement"}), 404
+            
+
+    else:
+        return jsonify({"message": "Access Denied"}), 403
+
+
+@app.route("/api/company/application/<int:applicationId>",methods = ["GET"])
+@jwt_required()
+def getApplication(applicationId):
+    current_user_id = get_jwt_identity()
+    user = db.session.scalar(db.select(User).where(User.id == int(current_user_id)))
+
+    if user.role.name == "COMPANY":
+        company = db.session.scalar(db.select(Company).where(Company.userId == user.id)) 
+        if not company.isApproved:
+            return jsonify({"message": "Blacklisted/Pending Approval from ADMIN"}), 404
+
+        application = db.session.scalar(db.select(Application).where(Application.id == applicationId))
+        
+        if not application:
+            return jsonify({"message": "Application does not Exist"}), 404
+
+        app = {
+            "id" : application.id,
+            "studentName" : application.student.name,
+            "jobTitle" : application.drive.jobTitle,
+            "driveId" : application.drive.id
+        }
+
+        return jsonify(app), 200
+
+        
+    else:
+        return jsonify({"message": "Access Denied"}), 403
+
+
+@app.route("/api/company/placements", methods=["GET"])
+@jwt_required()
+def companyPlacements():
+    current_user_id = get_jwt_identity()
+    user = db.session.scalar(db.select(User).where(User.id == int(current_user_id)))
+
+    if user.role.name == "COMPANY":
+        company = db.session.scalar(db.select(Company).where(Company.userId == user.id)) 
+        if not company.isApproved:
+            return jsonify({"message": "Blacklisted/Pending Approval from ADMIN"}), 404
+        placements = []
+        for d in company.drives:
+            for p in d.placements:
+                placements.append(p)
+                
+        placements_data = [
+             {
+                 "id": p.id,
+                 "studentName": p.studentName,
+                 "studentId": p.studentId,
+                 "driveId": p.driveId,
+                 "companyName": p.companyName,
+                 "position": p.position,
+                 "salary" : p.salary,
+                 "year" : p.year
+             }
+             for p in sorted(placements, key=lambda x : x.id, reverse = True)
+         ]
+        return jsonify(placements_data), 200
 
     else:
         return jsonify({"message": "Access Denied"}), 403

@@ -6,6 +6,9 @@ const authStore = useAuthStore();
 const drives = ref([]);
 const errmsg = ref("");
 const searchQuery = ref("");
+const currentTime = computed(() => {
+    return new Date().getTime();
+});
 
 const filteredDrives = computed(() => {
     if (!searchQuery.value) return drives.value;
@@ -13,14 +16,16 @@ const filteredDrives = computed(() => {
     return drives.value.filter(
         (d) =>
             (d.jobTitle && d.jobTitle.toLowerCase().includes(query)) ||
-            (d.status && d.status.toLowerCase().includes(query)) ||
-            (d.id && d.id.toString().includes(query)),
+            (d.companyName && d.companyName.toLowerCase().includes(query)) ||
+            (d.cgpa &&
+                (d.cgpa.toString().includes(query) ||
+                    (Number.isFinite(Number(query)) && d.cgpa >= query))),
     );
 });
 
 const fetchDrives = async () => {
     try {
-        const response = await fetch("/api/company/drives", {
+        const response = await fetch("/api/student/drives", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${authStore.token}`,
@@ -30,6 +35,7 @@ const fetchDrives = async () => {
 
         if (response.ok) {
             drives.value = await response.json();
+            errmsg.value = "";
         } else {
             const errorData = await response.json();
             errmsg.value =
@@ -42,11 +48,11 @@ const fetchDrives = async () => {
     }
 };
 
-const closeDrive = async (id) => {
-    if (!confirm("Are you sure you want to close this drive?")) return;
+const apply = async (id) => {
     try {
-        const response = await fetch(`/api/company/drives/${id}/close`, {
-            method: "PATCH",
+        if (!confirm("Are you sure you want to Apply in this Drive?")) return;
+        const response = await fetch(`/api/student/drives/${id}/apply`, {
+            method: "POST",
             headers: {
                 Authorization: `Bearer ${authStore.token}`,
                 "Content-Type": "application/json",
@@ -54,9 +60,10 @@ const closeDrive = async (id) => {
         });
         if (response.ok) {
             await fetchDrives();
+            errmsg.value = "";
         } else {
             const errorData = await response.json();
-            errmsg.value = errorData.message || "Failed to close drive";
+            alert(errorData.message);
         }
     } catch (err) {
         errmsg.value = "Network error occurred";
@@ -77,15 +84,10 @@ onMounted(async () => {
                     filteredDrives.length
                 }}</span>
             </h1>
-
-            <router-link class="btn btn-success" to="newdrive"
-                >+ New</router-link
-            >
-
             <input
                 type="text"
                 class="form-control w-auto"
-                placeholder="Search by ID, Job Title or status.."
+                placeholder="Search by cgpa, Job Title or Company Name..."
                 v-model="searchQuery"
             />
         </div>
@@ -96,19 +98,19 @@ onMounted(async () => {
     <div class="container-lg d-flex flex-wrap">
         <div class="card m-3" v-for="d in filteredDrives" :key="d.id">
             <div class="card-body">
-                <h2 class="card-title">{{ d.jobTitle }}</h2>
+                <h2 class="card-title">{{ d.jobTitle || d.joTitle }}</h2>
                 <ul class="card-text">
-                    <h5>
-                        <textarea
-                            class="form-control bg-white"
-                            disabled
-                            rows="6"
-                            cols="50"
-                        >{{ d.jobDescription }}</textarea
-                        >
-                    </h5>
+                    <textarea
+                        class="form-control bg-white"
+                        disabled
+                        rows="6"
+                        cols="50"
+                        >{{ d.jobDescription }}</textarea>
                     <li>
                         <h5>Drive ID : {{ d.id }}</h5>
+                    </li>
+                    <li>
+                        <h5>Company Name : {{ d.companyName }}</h5>
                     </li>
                     <li>
                         <h5>Branch : {{ d.branch }}</h5>
@@ -116,7 +118,7 @@ onMounted(async () => {
                     <li>
                         <h5>Minimum CGPA : {{ d.cgpa }}</h5>
                     </li>
-                    <li>
+                    <li v-if="d.status !== 'CLOSED'">
                         <h5>Application Deadline : {{ d.deadline }}</h5>
                     </li>
 
@@ -126,7 +128,6 @@ onMounted(async () => {
                             <span
                                 :class="{
                                     'text-success': d.status === 'APPROVED',
-                                    'text-warning': d.status === 'PENDING',
                                     'text-danger': d.status === 'CLOSED',
                                 }"
                             >
@@ -141,19 +142,28 @@ onMounted(async () => {
                 </ul>
                 <div class="d-flex gap-2 mt-3">
                     <button
-                        v-if="d.status !== 'CLOSED'"
-                        class="btn btn-danger"
-                        @click="closeDrive(d.id)"
+                        v-if="
+                            !d.isApplied &&
+                            d.status === 'APPROVED' &&
+                            new Date(d.deadline).getTime() >= currentTime
+                        "
+                        @click="apply(d.id)"
+                        class="btn btn-success"
                     >
-                        Close
+                        Apply
                     </button>
-
-                    <router-link
-                        v-if="d.status !== 'CLOSED'"
-                        class="btn btn-primary"
-                        :to="`editdrive/${d.id}`"
-                        >Edit</router-link
+                    <span class="text-success fw-bold fs-5" v-if="d.isApplied"
+                        >✓ Applied</span
                     >
+                    <p
+                        class="text-danger fw-bold fs-6"
+                        v-if="
+                            !d.isApplied &&
+                            new Date(d.deadline).getTime() < currentTime
+                        "
+                    >
+                        Deadline is Over
+                    </p>
                 </div>
             </div>
         </div>

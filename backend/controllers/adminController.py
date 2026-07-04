@@ -120,7 +120,7 @@ def adminApplications():
                 "driveId": a.driveId,
                 "companyName": a.drive.company.name,
                 "jobTitle": a.drive.jobTitle,
-                "resumeUrl": a.student.resumeUrl,
+                "resumeUrl": a.resumeUrl,
                 "applicationDate": a.applicationDate,
                 "status": a.status.value if hasattr(a.status, "value") else a.status,
             }
@@ -223,7 +223,9 @@ def adminDrives():
 
     if user.role.name == "ADMIN":
         drives = (
-            db.session.execute(db.select(PlacementDrive).order_by(PlacementDrive.id.desc()))
+            db.session.execute(
+                db.select(PlacementDrive).order_by(PlacementDrive.id.desc())
+            )
             .scalars()
             .all()
         )
@@ -269,10 +271,7 @@ def toggleDriveApproval(drive_id):
 
         db.session.commit()
         return jsonify(
-            {
-                "message": "Drive approval status updated",
-                "status": drive.status
-            }
+            {"message": "Drive approval status updated", "status": drive.status}
         ), 200
     except Exception as e:
         db.session.rollback()
@@ -294,14 +293,39 @@ def toDrive(drive_id):
         return jsonify({"message": "Drive not found"}), 404
 
     try:
+        for a in drive.applications:
+            db.session.delete(a)
         db.session.delete(drive)
+
         db.session.commit()
-        return jsonify(
-            {
-                "message": "Drive Deleted",
-                "status": drive.status
-            }
-        ), 200
+        return jsonify({"message": "Drive Deleted", "status": drive.status}), 200
     except Exception as e:
         db.session.rollback()
         return jsonify({"message": str(e)}), 500
+
+
+@app.route("/api/admin/placements", methods=["GET"])
+@jwt_required()
+def adminPlacement():
+    current_user_id = get_jwt_identity()
+    user = db.session.scalar(db.select(User).where(User.id == int(current_user_id)))
+
+    if user.role.name == "ADMIN":
+        placements = db.session.execute(db.select(Placement)).scalars().all()
+        placements_data = [
+            {
+                "id": p.id,
+                "studentName": p.studentName,
+                "studentId": p.studentId,
+                "driveId": p.driveId,
+                "companyName": p.companyName,
+                "position": p.position,
+                "salary" : p.salary,
+                "year" : p.year
+            }
+            for p in sorted(placements, key=lambda x : x.id, reverse = True)
+        ]
+        return jsonify(placements_data), 200
+
+    else:
+        return jsonify({"message": "Access Denied"}), 403

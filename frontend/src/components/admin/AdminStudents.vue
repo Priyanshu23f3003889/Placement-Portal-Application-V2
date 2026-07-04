@@ -132,7 +132,7 @@ onMounted(async () => {
                     <li>
                         <h5>
                             Resume :
-                            <a :href="s.resumeUrl">{{ s.resumeUrl }}</a>
+                            <a :href="s.resumeUrl" target="_blank">View Resume</a>
                         </h5>
                     </li>
                     <li>

@@ -3,19 +3,31 @@ import { useAuthStore } from "../states/authState.js";
 
 import Login from "../components/login.vue";
 import Register from "../components/register.vue";
+
 import AdminDashboard from "../components/adminDashboard.vue";
-import CompanyDashboard from "../components/companyDashboard.vue";
-import StudentDashboard from "../components/studentDashboard.vue";
 import AdminCompanies from "../components/admin/AdminCompanies.vue";
 import AdminStudents from "../components/admin/AdminStudents.vue";
 import AdminDrives from "../components/admin/AdminDrives.vue";
 import AdminApplications from "../components/admin/AdminApplications.vue";
+import AdminPlacements from "../components/admin/AdminPlacements.vue";
+
+import CompanyDashboard from "../components/companyDashboard.vue";
 import CompanyProfile from "../components/company/companyProfile.vue";
-import StudentProfile from "../components/student/studentProfile.vue";
 import CompanyDrives from "../components/company/companyDrives.vue";
 import NewDrive from "../components/company/companyNewDrive.vue";
-import  EditDrive from "../components/company/companyEditDrive.vue"
+import EditDrive from "../components/company/companyEditDrive.vue";
 import CompanyApplications from "../components/company/companyApplications.vue";
+import CompanyMakePlacement from "../components/company/companyMakePlacement.vue";
+import companyPlacements from "../components/company/companyPlacements.vue";
+
+import StudentDashboard from "../components/studentDashboard.vue";
+import StudentProfile from "../components/student/studentProfile.vue";
+import StudentCompanies from "../components/student/studentCompany.vue";
+import StudentDrives from "../components/student/studentDrives.vue";
+import StudentApplications from "../components/student/studentApplications.vue";
+import studentPlacements from "../components/student/studentPlacements.vue";
+import CompanyPlacements from "../components/company/companyPlacements.vue";
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,6 +74,11 @@ const router = createRouter({
           name: "admin-applications",
           component: AdminApplications,
         },
+        {
+          path: "placements",
+          name: "admin-placements",
+          component: AdminPlacements,
+        },
       ],
     },
     {
@@ -96,6 +113,16 @@ const router = createRouter({
           name: "company-applications",
           component: CompanyApplications,
         },
+        {
+          path: "makeplacement/:applicationId",
+          name: "company-makePlacement",
+          component: CompanyMakePlacement,
+        },
+        {
+          path: "placements",
+          name: "company-placements",
+          component: CompanyPlacements,
+        },
       ],
     },
     {
@@ -103,12 +130,33 @@ const router = createRouter({
       name: "student-dashboard",
       component: StudentDashboard,
       meta: { requiresAuth: true, role: "STUDENT" },
+      redirect: "/student/drives",
       children: [
         {
           path: "profile",
           name: "student-profile",
           component: StudentProfile,
         },
+        {
+          path: "companies",
+          name: "student-companies",
+          component: StudentCompanies,
+        },
+        {
+          path: "drives",
+          name: "student-drives",
+          component: StudentDrives,
+        },
+        {
+          path: "applications",
+          name: "student-applications",
+          component: StudentApplications,
+        },
+        {
+          path: "placements",
+          name: "student-placements",
+          component : studentPlacements
+        }
       ],
     },
   ],
@@ -119,7 +167,7 @@ router.beforeEach((to, from) => {
   const isAuthenticated = !!authStore.token;
 
   if (to.name === "login" && isAuthenticated) {
-    if (authStore.role === "ADMIN") return { path: "/admin/companies" };
+    if (authStore.role === "ADMIN") return { name: "admin-dashboard" };
     if (authStore.role === "COMPANY") return { name: "company-dashboard" };
     if (authStore.role === "STUDENT") return { name: "student-dashboard" };
   }
@@ -129,7 +177,7 @@ router.beforeEach((to, from) => {
   }
 
   if (to.meta.requiresAuth && to.meta.role !== authStore.role) {
-    if (authStore.role === "ADMIN") return { path: "/admin/companies" };
+    if (authStore.role === "ADMIN") return { name: "admin-dashboard" };
     if (authStore.role === "COMPANY") return { name: "company-dashboard" };
     if (authStore.role === "STUDENT") return { name: "student-dashboard" };
     return { name: "login" };

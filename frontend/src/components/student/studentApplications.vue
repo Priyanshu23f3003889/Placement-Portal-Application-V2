@@ -1,10 +1,7 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "../../states/authState";
-import { useRouter } from "vue-router";
 
-
-const router = useRouter();
 const authStore = useAuthStore();
 const applications = ref([]);
 const errmsg = ref("");
@@ -15,10 +12,10 @@ const filteredApplications = computed(() => {
     const query = searchQuery.value.toLowerCase();
     return applications.value.filter(
         (a) =>
-            a.name.toLowerCase().includes(query) ||
             a.id.toString().includes(query) ||
             a.companyName.toLowerCase().includes(query) ||
-            a.jobTitle.toLowerCase().includes(query),
+        a.jobTitle.toLowerCase().includes(query) ||
+            a.driveId.toString().includes(query)
     );
 });
 
@@ -32,7 +29,7 @@ const getStatusClass = (status) => {
 
 const fetchApplications = async () => {
     try {
-        const response = await fetch("/api/company/applications", {
+        const response = await fetch("/api/student/applications", {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${authStore.token}`,
@@ -42,36 +39,6 @@ const fetchApplications = async () => {
 
         if (response.ok) {
             applications.value = await response.json();
-        } else {
-            const errorData = await response.json();
-            errmsg.value =
-                errorData.message ||
-                errorData.msg ||
-                "Failed to fetch Applications";
-        }
-    } catch (err) {
-        errmsg.value = "Network error occurred";
-    }
-};
-
-const changeStatus = async (appId, rejected) => {
-    try {
-        if (!confirm("Change the Application Status ?")) {
-            return;
-        }
-        const response = await fetch(
-            `/api/company/applications/changestatus/${appId}/${rejected}`,
-            {
-                method: "PATCH",
-                headers: {
-                    Authorization: `Bearer ${authStore.token}`,
-                    "Content-Type": "application/json",
-                },
-            },
-        );
-
-        if (response.ok) {
-            fetchApplications();
         } else {
             const errorData = await response.json();
             errmsg.value =
@@ -110,13 +77,11 @@ onMounted(async () => {
     </div>
 
     <div class="container-lg d-flex flex-wrap">
-        <div class="card m-3" v-for="a in filteredApplications" :key="a.id">
+        <div class="card m-3" v-for="a in filteredApplications">
             <div class="card-body">
-                <h2 class="card-title">{{ a.name }}</h2>
+                <h2 class="card-title">{{ a.companyName }}</h2>
+                <div class="text-danger mb-3 fw-bold" v-if="!a.isApproved">Blacklisted</div>
                 <ul class="card-text">
-                    <li>
-                        <h5>Student ID : {{ a.studentId }}</h5>
-                    </li>
                     <li>
                         <h5>Application ID : {{ a.id }}</h5>
                     </li>
@@ -141,33 +106,11 @@ onMounted(async () => {
                         <h5>
                             Status :
                             <span :class="getStatusClass(a.status)">{{
-                                a.status === "SELECTED" ? "PLACED" : a.status
+                                a.status
                             }}</span>
                         </h5>
                     </li>
                 </ul>
-                <div
-                    class="d-flex gap-2"
-                    v-if="a.status !== 'REJECTED' && a.status !== 'SELECTED'"
-                >
-                    <button
-                        class="btn btn-success"
-                        @click=" a.status=== 'SHORTLISTED' ? router.push({ name: 'company-makePlacement', params:{applicationId : a.id}}) : changeStatus(a.id, 0)"
-                    >
-                        {{
-                            a.status === "APPLIED"
-                                ? "Shortlist"
-                                : "Make Placement"
-                        }}
-                    </button>
-
-                    <button
-                        class="btn btn-danger"
-                        @click="changeStatus(a.id, 1)"
-                    >
-                        Reject
-                    </button>
-                </div>
             </div>
         </div>
     </div>

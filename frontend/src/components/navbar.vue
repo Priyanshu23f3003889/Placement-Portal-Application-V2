@@ -73,17 +73,30 @@ const isCompany = computed(() => {
                     </template>
 
                     <template v-if="isStudent">
+
                         <li class="nav-item">
-                            <a
-                                class="nav-link text-white active fw-bold"
-                                aria-current="page"
-                                href="#"
-                                >Companies</a
+                            <router-link
+                                class="nav-link text-white"
+                                exact-active-class="active fw-bold"
+                                to="/student/drives"
+                                >Drives</router-link
+                            >
+                        </li>
+                        
+                        <li class="nav-item">
+                            <router-link
+                                class="nav-link text-white"
+                                exact-active-class="active fw-bold"
+                                to="/student/Applications"
+                                >Applications</router-link
                             >
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" href="#"
-                                >Applied Drives</a
+                            <router-link
+                                class="nav-link text-white"
+                                exact-active-class="active fw-bold"
+                                to="/student/companies"
+                                >Companies</router-link
                             >
                         </li>
                     </template>
@@ -106,6 +119,14 @@ const isCompany = computed(() => {
                             >
                         </li>
                     </template>
+                    <li class="nav-item">
+                        <router-link
+                            class="nav-link text-white"
+                            exact-active-class="active fw-bold"
+                            to="placements"
+                            >Placements</router-link
+                        >
+                    </li>
                 </ul>
                 <div class="d-flex mt-2 mt-lg-0 gap-2">
                     <router-link

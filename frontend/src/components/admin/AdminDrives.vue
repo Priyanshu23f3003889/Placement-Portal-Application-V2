@@ -70,7 +70,8 @@ const toggleApproval = async (id) => {
 };
 
 const deleteDrive = async (id) => {
-    try {
+  try {
+      if (!confirm("Are you sure you want to delete this Drive?")) return;
         const response = await fetch(`/api/admin/drives/${id}/delete`, {
             method: "DELETE",
             headers: {
@@ -125,8 +126,7 @@ onMounted(async () => {
                             disabled
                             rows="6"
                             cols="50"
-                        >
- {{ d.jobDescription }}</textarea
+                        >{{ d.jobDescription }}</textarea
                         >
                     <li>
                         <h5>Drive ID : {{ d.id }}</h5>
