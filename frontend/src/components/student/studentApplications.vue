@@ -65,6 +65,9 @@ onMounted(async () => {
                     filteredApplications.length
                 }}</span>
             </h1>
+
+            <button class="btn btn-info" @click='export'>Export data</button>
+            
             <input
                 type="text"
                 class="form-control w-auto"

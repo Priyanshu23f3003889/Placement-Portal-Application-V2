@@ -124,6 +124,8 @@ def closeDrive(drive_id):
             return jsonify({"message": "Drive not found or access denied"}), 404
 
         drive.status = DriveStatus.CLOSED
+        if datetime.strptime(str(drive.deadline), "%Y-%m-%d %H:%M:%S")>datetime.now():
+            drive.deadline = datetime.now()
 
         for application in drive.applications:
             if application.status in [

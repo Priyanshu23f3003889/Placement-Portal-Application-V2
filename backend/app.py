@@ -78,14 +78,15 @@ def createApp():
     CORS(app)
 
     return app
+    
 
+app = createApp()
+
+import controllers.adminController
+import controllers.authController
+import controllers.companyController
+import controllers.mainController
+import controllers.studentController
 
 if __name__ == "__main__":
-    app = createApp()
-    import controllers.adminController
-    import controllers.authController
-    import controllers.companyController
-    import controllers.mainController
-    import controllers.studentController
-
     app.run(debug=True, host="0.0.0.0", port=80)

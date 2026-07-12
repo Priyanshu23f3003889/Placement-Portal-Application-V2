@@ -7,6 +7,7 @@ from flask_jwt_extended import (
 )
 
 from datetime import datetime
+from celery_app import send_csv
 
 @app.route("/api/student/profile", methods=["GET"])
 @jwt_required()
@@ -213,3 +214,30 @@ def studentPlacements():
            ]
 
     return jsonify(placements_data), 200
+
+
+@app.route("/api/student/applications/export", methods=["POST"])
+@jwt_required()
+def studentExportApplications():
+    current_user_id = get_jwt_identity()
+    student = db.session.scalar(
+        db.select(Student).where(Student.userId == int(current_user_id))
+    )
+    if not student or student.user.role.name != "STUDENT":
+        return jsonify({"message": "Student not found"}), 404
+
+    if not student.user.isActive:
+        return jsonify({"message": "Blacklisted/Pending Approval from ADMIN"}), 403
+
+    applications = student.applications
+    
+    csv_data = "Application ID,Company,Job Title,Applied,Status\n"
+
+    for app in applications :
+        app_data = [app.id,app.drive.company.name,app.drive.jobTitle,app.applicationDate,app.status.name ]
+        csv_data += ','.join(app_data) + '\n'
+
+    m = send_csv.delay(student.user.email, csv_data=csv_data)
+    
+    return jsonify({"message": "Email sent successfully"}), 200 if m else jsonify({"message": "failed to send Email"}), 404
+
