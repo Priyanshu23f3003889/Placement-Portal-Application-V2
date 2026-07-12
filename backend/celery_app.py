@@ -1,26 +1,19 @@
-from calendar import month
+from time import sleep
 
 from celery import Celery
-from app import app
-import time
 from datetime import timedelta
 from mail import sendEmail
 from celery.schedules import crontab
 from database.models import *
 from datetime import datetime
-
-celery = Celery(
-    'tasks',
-    broker='redis://localhost:6379/0',
-    backend='redis://localhost:6379/0'
-)
-
-celery.conf.update(timezone='Asia/Kolkata', enable_utc=False)
+from app import app
+from celery_instance import celery
 
 @celery.task()
 def send_csv(toEmail, csv_data):
+    sleep(10)
     sendEmail(toEmail, 'Student Application Data', body=csv_data, type='csv')
-    return "email sent"
+    return "csv email sent"
     
 
 @celery.task()
