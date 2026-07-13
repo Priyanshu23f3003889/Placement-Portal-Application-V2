@@ -1,15 +1,13 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from "vue";
+import { ref, onMounted, computed } from "vue";
 import { useAuthStore } from "../../states/authState";
+import { useExportStore } from "../../states/exportState";
 
 const authStore = useAuthStore();
+const exportStore = useExportStore();
 const applications = ref([]);
 const errmsg = ref("");
 const searchQuery = ref("");
-const exportTaskId = ref(localStorage.getItem('exportTaskId') || null);
-const exportStatus = ref(exportTaskId.value ? 'exporting' : 'idle');
-let pollTimeout = null;
-let isComponentMounted = true;
 
 const filteredApplications = computed(() => {
     if (!searchQuery.value) return applications.value;
@@ -56,50 +54,12 @@ const fetchApplications = async () => {
 };
 
 onMounted(async () => {
-    if (exportTaskId.value) {
-        checkExportStatus();
-    }
     await fetchApplications();
 });
 
-onUnmounted(() => {
-    isComponentMounted = false;
-    if (pollTimeout) clearTimeout(pollTimeout);
-});
-
-const checkExportStatus = async () => {
-    if (!exportTaskId.value || !isComponentMounted) return;
-    try {
-        const response = await fetch(`/api/student/applications/export/status/${exportTaskId.value}`, {
-            headers: {
-                Authorization: `Bearer ${authStore.token}`
-            }
-        });
-        
-        if (!isComponentMounted) return;
-        
-        const data = await response.json();
-        if (data.status === 'SUCCESS' || data.status === 'FAILURE') {
-            exportStatus.value = data.status === 'SUCCESS' ? 'done' : 'idle';
-            if (data.status === 'FAILURE') {
-                errmsg.value = "Export task failed.";
-            }
-            localStorage.removeItem('exportTaskId');
-            exportTaskId.value = null;
-        } else {
-            exportStatus.value = 'exporting';
-            if (isComponentMounted) {
-                pollTimeout = setTimeout(checkExportStatus, 2000);
-            }
-        }
-    } catch (err) {
-        console.error("Error checking export status:", err);
-    }
-};
-
 const exportData = async () => {
-    if (exportStatus.value === 'exporting') return;
-    exportStatus.value = 'exporting';
+    if (exportStore.exportStatus === 'exporting') return;
+    exportStore.exportStatus = 'exporting';
     try {
         const response = await fetch('/api/student/applications/export', {
             method: 'POST',
@@ -110,18 +70,16 @@ const exportData = async () => {
         if (response.ok) {
             const data = await response.json();
             if (data.taskId) {
-                exportTaskId.value = data.taskId;
-                localStorage.setItem('exportTaskId', data.taskId);
-                checkExportStatus();
+                exportStore.setTask(data.taskId);
             } else {
-                exportStatus.value = 'done';
+                exportStore.exportStatus = 'idle';
             }
         } else {
-            exportStatus.value = 'idle';
+            exportStore.exportStatus = 'idle';
             errmsg.value = "Failed to start export.";
         }
     } catch (err) {
-        exportStatus.value = 'idle';
+        exportStore.exportStatus = 'idle';
         errmsg.value = "Network error occurred.";
     }
 };
@@ -138,12 +96,11 @@ const exportData = async () => {
             </h1>
 
             <button 
-                class="btn" 
-                :class="exportStatus === 'done' ? 'btn-success text-white' : 'btn-info'"
-                :disabled="exportStatus === 'exporting'"
+                class="btn btn-info" 
+                :disabled="exportStore.exportStatus === 'exporting'"
                 @click="exportData"
             >
-                {{ exportStatus === 'exporting' ? 'Exporting...' : exportStatus === 'done' ? 'Email sent' : 'Export data' }}
+                {{ exportStore.exportStatus === 'exporting' ? 'Exporting...' : 'Export data' }}
             </button>
             
             <input

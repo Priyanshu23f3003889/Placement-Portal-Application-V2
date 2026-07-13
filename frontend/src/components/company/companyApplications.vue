@@ -16,8 +16,7 @@ const filteredApplications = computed(() => {
     return applications.value.filter(
         (a) =>
             a.name.toLowerCase().includes(query) ||
-            a.id.toString().includes(query) ||
-            a.companyName.toLowerCase().includes(query) ||
+            a.driveId.toString().includes(query) ||
             a.jobTitle.toLowerCase().includes(query),
     );
 });
@@ -101,7 +100,7 @@ onMounted(async () => {
             <input
                 type="text"
                 class="form-control w-auto"
-                placeholder="Search by ID, Name, Company, or Job Title"
+                placeholder="Search by Drive ID, Name or Job Title"
                 v-model="searchQuery"
             />
         </div>

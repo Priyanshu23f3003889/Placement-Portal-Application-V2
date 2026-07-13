@@ -1,4 +1,4 @@
-﻿import { defineStore } from "pinia";
+import { defineStore } from "pinia";
 
 export const useAuthStore = defineStore("auth", {
   state: () => {
@@ -84,7 +84,13 @@ export const useAuthStore = defineStore("auth", {
     async logout() {
       this.token = null;
       this.role = null;
-      localStorage.removeItem("token");
+      localStorage.clear();
+      
+      import('./exportState').then(({ useExportStore }) => {
+        const exportStore = useExportStore();
+        if (exportStore.pollTimeout) clearTimeout(exportStore.pollTimeout);
+        exportStore.$reset();
+      });
     },
   },
 });

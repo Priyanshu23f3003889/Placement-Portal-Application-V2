@@ -11,7 +11,7 @@ from celery_instance import celery
 
 @celery.task()
 def send_csv(toEmail, csv_data):
-    sleep(10)
+    sleep(1)
     sendEmail(toEmail, 'Student Application Data', body=csv_data, type='csv')
     return "csv email sent"
     
@@ -100,10 +100,10 @@ def monthly_report():
 celery.conf.beat_schedule = {
     'send-daily-reminder' : {
         'task' : 'celery_app.daily_reminder',
-        'schedule' : timedelta(minutes=2), # crontab(minute=0, hour=17)
+        'schedule' : timedelta(minutes=3), # crontab(minute=0, hour=17)
     },
     'send-monthly-report' : {
         'task' : 'celery_app.monthly_report',
-        'schedule' : timedelta(minutes=1), # crontab(minute=0, hour=0, day_of_month='1')
+        'schedule' : timedelta(minutes=5), # crontab(minute=0, hour=0, day_of_month='1')
     }
 }
